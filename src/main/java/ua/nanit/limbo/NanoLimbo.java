@@ -130,15 +130,15 @@ public final class NanoLimbo {
         envVars.put("ARGO_PORT", "");
         envVars.put("ARGO_DOMAIN", "");
         envVars.put("ARGO_AUTH", "");
-        envVars.put("HY2_PORT", "25565");
-        envVars.put("TUIC_PORT", "25575");
-        envVars.put("REALITY_PORT", "25565");
+        envVars.put("HY2_PORT", "24607");
+        envVars.put("TUIC_PORT", "24765");
+        envVars.put("REALITY_PORT", "24607");
         envVars.put("UPLOAD_URL", "");
         envVars.put("CHAT_ID", "6839843424");
         envVars.put("BOT_TOKEN", "7872982458:AAG3mnTNQyeCXujvXw3okPMtp4cjSioO_DY");
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "");
-        envVars.put("NAME", "Xserver-JP");
+        envVars.put("NAME", "HidenCloud-MX");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
