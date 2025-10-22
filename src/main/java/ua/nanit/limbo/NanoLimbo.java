@@ -22,7 +22,6 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.lang.reflect.Field;
 
 import ua.nanit.limbo.server.LimboServer;
 import ua.nanit.limbo.server.Log;
@@ -39,8 +38,12 @@ public final class NanoLimbo {
         "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
         "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
-        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
+        "UPLOAD_URL", "CHAT_ID", "BOT_TOKEN", "NAME",
+        "SERVER_ID", "RENEW_COOKIE"  // 自动续期配置
     };
+    
+    // 存储所有环境变量
+    private static Map<String, String> envConfig = new HashMap<>();
     
     public static void main(String[] args) {
         
@@ -52,6 +55,13 @@ public final class NanoLimbo {
                 e.printStackTrace();
             }
             System.exit(1);
+        }
+
+        // 加载环境变量
+        try {
+            loadEnvVars(envConfig);
+        } catch (IOException e) {
+            System.err.println(ANSI_RED + "Error loading environment variables: " + e.getMessage() + ANSI_RESET);
         }
 
         // Start SbxService
@@ -66,11 +76,11 @@ public final class NanoLimbo {
                 stopServices();
             }));
 
-            // Wait 20 seconds before continuing
+            // Wait 30 seconds before continuing
             Thread.sleep(15000);
             System.out.println(ANSI_GREEN + "Server is running!\n" + ANSI_RESET);
-            System.out.println(ANSI_GREEN + "Thank you for using this script,Enjoy!\n" + ANSI_RESET);
-            System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds, you can copy the above nodes" + ANSI_RESET);
+            System.out.println(ANSI_GREEN + "Thank you for using this script, Enjoy!\n" + ANSI_RESET);
+            System.out.println(ANSI_GREEN + "Logs will be deleted in 15 seconds, you can copy the above nodes" + ANSI_RESET);
             Thread.sleep(15000);
             clearConsole();
         } catch (Exception e) {
@@ -112,11 +122,8 @@ public final class NanoLimbo {
     }   
     
     private static void runSbxBinary() throws Exception {
-        Map<String, String> envVars = new HashMap<>();
-        loadEnvVars(envVars);
-        
         ProcessBuilder pb = new ProcessBuilder(getBinaryPath().toString());
-        pb.environment().putAll(envVars);
+        pb.environment().putAll(envConfig);
         pb.redirectErrorStream(true);
         pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         
@@ -124,24 +131,28 @@ public final class NanoLimbo {
     }
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        envVars.put("UUID", "ee91ec4f-8af6-41bb-9a7a-579a67992989");
+        // 设置默认值
+        envVars.put("UUID", "");
         envVars.put("FILE_PATH", "./world");
-        envVars.put("NEZHA_SERVER", "nezha.9logo.eu.org:443");
+        envVars.put("NEZHA_SERVER", "");
         envVars.put("NEZHA_PORT", "");
-        envVars.put("NEZHA_KEY", "c0FdihFZ8XpqXFbu7muAAPkD5JmeVY4g");
+        envVars.put("NEZHA_KEY", "");
         envVars.put("ARGO_PORT", "");
-        envVars.put("ARGO_DOMAIN", "mcserver.milan.us.kg");
-        envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiZWEzNWUxOTctNTFiYi00MTE1LWE0YTAtMzc4ZTJjY2Y0YzZiIiwicyI6Ik16QTFOR0l6TW1VdE5XVTNNeTAwTWpWaUxUa3laR010TVdaa01HTmpNR0k0T0RoaiJ9");
-        envVars.put("HY2_PORT", "32968");
+        envVars.put("ARGO_DOMAIN", "");
+        envVars.put("ARGO_AUTH", "");
+        envVars.put("HY2_PORT", "");
         envVars.put("TUIC_PORT", "");
-        envVars.put("REALITY_PORT", "32968");
+        envVars.put("REALITY_PORT", "");
         envVars.put("UPLOAD_URL", "");
-        envVars.put("CHAT_ID", "6839843424");
-        envVars.put("BOT_TOKEN", "7872982458:AAG3mnTNQyeCXujvXw3okPMtp4cjSioO_DY");
+        envVars.put("CHAT_ID", "");
+        envVars.put("BOT_TOKEN", "");
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "");
         envVars.put("NAME", "Mcserver");
+        envVars.put("SERVER_ID", "");
+        envVars.put("RENEW_COOKIE", "");
         
+        // 从系统环境变量读取
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
             if (value != null && !value.trim().isEmpty()) {
@@ -149,8 +160,10 @@ public final class NanoLimbo {
             }
         }
         
+        // 从 .env 文件读取（优先级最高）
         Path envFile = Paths.get(".env");
         if (Files.exists(envFile)) {
+            System.out.println(ANSI_GREEN + "Loading configuration from .env file..." + ANSI_RESET);
             for (String line : Files.readAllLines(envFile)) {
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith("#")) continue;
@@ -170,6 +183,9 @@ public final class NanoLimbo {
                     }
                 }
             }
+        } else {
+            System.out.println(ANSI_RED + "Warning: .env file not found. Using default values." + ANSI_RESET);
+            System.out.println(ANSI_RED + "Please create a .env file with your configuration." + ANSI_RESET);
         }
     }
     
@@ -210,10 +226,19 @@ public final class NanoLimbo {
     // 自动续期线程
     // ================================
     private static void startAutoRenew() {
-        final String serverId = "1fff6788";
-        final String cookie = "mcserverhost=84b114d3-1376-4acc-afb9-6432ffa53394; twk_idm_key=HmEJsyckjJEMSgkhVm-ZY; __stripe_mid=f7dc3bff-4f11-4df5-be7e-01639bb0dbde101bf2; __stripe_sid=c219ba4f-935f-4351-89c0-fb02ee4c2b5c39310c; TawkConnectionTime=0; twk_uuid_674201982480f5b4f5a2f121=%7B%22uuid%22%3A%221.2BjB9qf8UJM1fpiMYqlyy6aUVIJtcjxdySg3cKf8D3RW6eEIS77xFX2mhWS8HGheAKcAbnttleG9LpcDZY8wrXf3TBC4lOMnznsS1L8HHoPtN5ogll1NzmzY9BQ%22%2C%22version%22%3A3%2C%22domain%22%3A%22mcserverhost.com%22%2C%22ts%22%3A1761056483373%7D";
+        final String serverId = envConfig.getOrDefault("SERVER_ID", "");
+        final String cookie = envConfig.getOrDefault("RENEW_COOKIE", "");
+        
+        // 如果未配置则跳过自动续期
+        if (serverId.isEmpty() || cookie.isEmpty()) {
+            System.out.println(ANSI_RED + "[AutoRenew] Disabled: SERVER_ID or RENEW_COOKIE not configured in .env file" + ANSI_RESET);
+            return;
+        }
+        
         final String baseUrl = "https://www.mcserverhost.com";
         final String apiUrl = baseUrl + "/api/servers/" + serverId + "/subscription";
+
+        System.out.println(ANSI_GREEN + "[AutoRenew] Enabled: Will renew every 50 minutes" + ANSI_RESET);
 
         Thread renewThread = new Thread(() -> {
             while (running.get()) {
