@@ -222,58 +222,88 @@ public final class NanoLimbo {
         }
     }
 
-    // ================================
-    // 自动续期线程
-    // ================================
-    private static void startAutoRenew() {
-        final String serverId = envConfig.getOrDefault("SERVER_ID", "");
-        final String cookie = envConfig.getOrDefault("RENEW_COOKIE", "");
-        
-        // 如果未配置则跳过自动续期
-        if (serverId.isEmpty() || cookie.isEmpty()) {
-            System.out.println(ANSI_RED + "[AutoRenew] Disabled: SERVER_ID or RENEW_COOKIE not configured in .env file" + ANSI_RESET);
-            return;
-        }
-        
-        final String baseUrl = "https://www.mcserverhost.com";
-        final String apiUrl = baseUrl + "/api/servers/" + serverId + "/subscription";
+#!/bin/bash
 
-        System.out.println(ANSI_GREEN + "[AutoRenew] Enabled: Will renew every 50 minutes" + ANSI_RESET);
+# ============================================
+# EternalZero 面板自动续期脚本
+# 每 2 小时自动执行一次，自动登录获取 Cookie
+# ============================================
 
-        Thread renewThread = new Thread(() -> {
-            while (running.get()) {
-                try {
-                    HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setRequestProperty("Cookie", cookie);
-                    conn.setRequestProperty("Accept", "*/*");
-                    conn.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9");
-                    conn.setRequestProperty("Content-Length", "0");
-                    conn.setRequestProperty("Origin", baseUrl);
-                    conn.setRequestProperty("Referer", baseUrl + "/servers/" + serverId + "/dashboard");
-                    conn.setRequestProperty("X-Requested-With", "XMLHttpRequest");
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-                    conn.setDoOutput(true);
+EMAIL="pungwing@milan.us.kg"
+PASSWORD="AkiRa13218*#"
+SERVER_ID="b33904b9"
 
-                    int responseCode = conn.getResponseCode();
-                    if (responseCode == 200) {
-                        System.out.println(ANSI_GREEN + "[AutoRenew] Renew successful at " + new Date() + ANSI_RESET);
-                    } else {
-                        System.out.println(ANSI_RED + "[AutoRenew] Renew failed, HTTP " + responseCode + ANSI_RESET);
-                    }
-                    conn.disconnect();
+BASE_URL="https://gpanel.eternalzero.cloud"
+API_URL="${BASE_URL}/api/servers/${SERVER_ID}/subscription"
+REFERER="${BASE_URL}/servers/${SERVER_ID}/dashboard"
 
-                    Thread.sleep(50 * 60 * 1000L); // 每50分钟执行一次
-                } catch (Exception e) {
-                    System.err.println(ANSI_RED + "[AutoRenew] Error: " + e.getMessage() + ANSI_RESET);
-                    try {
-                        Thread.sleep(5 * 60 * 1000L); // 出错时延迟5分钟重试
-                    } catch (InterruptedException ignored) {}
-                }
-            }
-        });
-
-        renewThread.setDaemon(true); // 不阻止程序退出
-        renewThread.start();
-    }
+# 获取最新 Cookie
+update_cookie() {
+  COOKIE=$(curl -s -D - \
+    -X POST "${BASE_URL}/login" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "email=${EMAIL}&password=${PASSWORD}" \
+    | grep -i "set-cookie" | cut -d' ' -f2- | tr -d '\r' | tr '\n' ' ')
+  
+  if [ -z "$COOKIE" ]; then
+      echo "[ERROR] 登录失败，未获取到 Cookie。"
+      return 1
+  fi
+  echo "[INFO] 登录成功，Cookie 已更新。"
+  return 0
 }
+
+# 检查按钮是否 disabled
+check_button_disabled() {
+  PAGE=$(curl -s --connect-timeout 10 --max-time 20 \
+    -H "Cookie: ${COOKIE}" \
+    -H "Referer: ${REFERER}" \
+    -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+    "${REFERER}")
+
+  echo "${PAGE}" | grep -qi 'disabled'
+  if [ $? -eq 0 ]; then
+    echo "[INFO] 检测到续期按钮 disabled，本次跳过。"
+    return 0
+  fi
+  return 1
+}
+
+# 执行续期请求
+renew_server() {
+  TMP_OUT=$(mktemp)
+  HTTP_CODE=$(curl -s -w "%{http_code}" -o "${TMP_OUT}" -X POST "${API_URL}" \
+    -H "Cookie: ${COOKIE}" \
+    -H "Accept: */*" \
+    -H "Accept-Language: zh-CN,zh;q=0.9" \
+    -H "Content-Length: 0" \
+    -H "Origin: ${BASE_URL}" \
+    -H "Referer: ${REFERER}" \
+    -H "X-Requested-With: XMLHttpRequest" \
+    -H "Sec-Fetch-Dest: empty" \
+    -H "Sec-Fetch-Mode: cors" \
+    -H "Sec-Fetch-Site: same-origin" \
+    -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+
+  if [ "${HTTP_CODE}" = "200" ] || [ "${HTTP_CODE}" = "204" ]; then
+    echo "[OK] 续期成功 (HTTP ${HTTP_CODE})"
+  else
+    echo "[WARN] 续期失败 (HTTP ${HTTP_CODE})；响应如下："
+    cat "${TMP_OUT}"
+  fi
+  rm -f "${TMP_OUT}"
+}
+
+# 主循环：每 2 小时执行一次
+while true; do
+  echo "================ $(date '+%F %T') 开始本轮 ================="
+  if update_cookie; then
+    if check_button_disabled; then
+      echo "[SKIP] 本轮已跳过。"
+    else
+      renew_server
+    fi
+  fi
+  echo "================ $(date '+%F %T') 本轮结束 ================="
+  sleep 7200   # 2 小时
+done
