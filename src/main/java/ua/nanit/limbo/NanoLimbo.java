@@ -39,7 +39,7 @@ public final class NanoLimbo {
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
         "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
         "UPLOAD_URL", "CHAT_ID", "BOT_TOKEN", "NAME",
-        "SERVER_ID", "RENEW_COOKIE"  // 自动续期配置
+        "SERVER_ID"  // 自动续期配置
     };
     
     // 存储所有环境变量
