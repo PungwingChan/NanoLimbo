@@ -82,11 +82,14 @@ public final class NanoLimbo {
             Log.error("Cannot start server: ", e);
         }
 
-        // ✅ 保持程序常驻，不自动退出
+        // ✅ 保持程序常驻，并每10分钟输出一次心跳日志
         System.out.println(ANSI_GREEN + "保持常驻模式已开启，程序将持续运行..." + ANSI_RESET);
-        try {
-            Thread.currentThread().join(); // 永久阻塞主线程
-        } catch (InterruptedException ignored) {}
+        while (true) {
+            try {
+                Thread.sleep(10 * 60 * 1000); // 每10分钟
+                System.out.println("[Heartbeat] 程序仍在运行中 " + new Date());
+            } catch (InterruptedException ignored) {}
+        }
     }
 
     private static void clearConsole() {
