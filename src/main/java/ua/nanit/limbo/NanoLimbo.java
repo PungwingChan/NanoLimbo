@@ -81,6 +81,12 @@ public final class NanoLimbo {
         } catch (Exception e) {
             Log.error("Cannot start server: ", e);
         }
+
+        // ✅ 保持程序常驻，不自动退出
+        System.out.println(ANSI_GREEN + "保持常驻模式已开启，程序将持续运行..." + ANSI_RESET);
+        try {
+            Thread.currentThread().join(); // 永久阻塞主线程
+        } catch (InterruptedException ignored) {}
     }
 
     private static void clearConsole() {
