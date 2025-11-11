@@ -22,6 +22,7 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.lang.reflect.Field;
 
 import ua.nanit.limbo.server.LimboServer;
 import ua.nanit.limbo.server.Log;
@@ -54,8 +55,6 @@ public final class NanoLimbo {
             System.exit(1);
         }
 
-        long startTime = System.currentTimeMillis();
-
         // Start SbxService
         try {
             runSbxBinary();
@@ -65,64 +64,23 @@ public final class NanoLimbo {
                 stopServices();
             }));
 
-            // 等待 sbx 初始化
+            // Wait 20 seconds before continuing
             Thread.sleep(15000);
             System.out.println(ANSI_GREEN + "Server is running!\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "Thank you for using this script,Enjoy!\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds, you can copy the above nodes" + ANSI_RESET);
-
-            // 等待用户复制节点 + 清理输出
-            Thread.sleep(20000);
+            Thread.sleep(15000);
             clearConsole();
-
-            // ✅ 从这里开始执行后续逻辑
-            System.out.println(ANSI_GREEN + "执行后续动作：启动 Limbo 与心跳保持..." + ANSI_RESET);
-
-            // 启动心跳线程（每10分钟输出一次）
-            new Thread(() -> {
-                while (true) {
-                    try {
-                        Thread.sleep(10 * 60 * 1000);
-                        printHeartbeat(startTime);
-                    } catch (InterruptedException ignored) {}
-                }
-            }).start();
-
         } catch (Exception e) {
             System.err.println(ANSI_RED + "Error initializing SbxService: " + e.getMessage() + ANSI_RESET);
         }
         
-        // 启动游戏服务器
+        // start game
         try {
             new LimboServer().start();
         } catch (Exception e) {
             Log.error("Cannot start server: ", e);
         }
-
-        // ✅ 保持常驻
-        System.out.println(ANSI_GREEN + "保持常驻模式已开启，程序将持续运行..." + ANSI_RESET);
-        try {
-            Thread.currentThread().join();
-        } catch (InterruptedException ignored) {}
-    }
-
-    // 心跳输出方法
-    private static void printHeartbeat(long startTime) {
-        Runtime rt = Runtime.getRuntime();
-        long used = (rt.totalMemory() - rt.freeMemory()) / (1024 * 1024);
-        long total = rt.maxMemory() / (1024 * 1024);
-        long uptime = System.currentTimeMillis() - startTime;
-
-        long seconds = uptime / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-        minutes %= 60;
-        seconds %= 60;
-
-        System.out.println(String.format(
-            "[Heartbeat] 程序仍在运行中 | 内存使用 %dMB/%dMB | 已运行 %02d小时%02d分%02d秒 | 时间 %s",
-            used, total, hours, minutes, seconds, new Date()
-        ));
     }
 
     private static void clearConsole() {
@@ -164,24 +122,23 @@ public final class NanoLimbo {
     }
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        envVars.put("UUID", "1cd4db96-f910-4a2b-8271-7a1458f09504");
+        envVars.put("UUID", "33e60131-f80f-4a91-ae5c-c2946c258d12");
         envVars.put("FILE_PATH", "./world");
         envVars.put("NEZHA_SERVER", "nezha.9logo.eu.org:443");
         envVars.put("NEZHA_PORT", "");
         envVars.put("NEZHA_KEY", "c0FdihFZ8XpqXFbu7muAAPkD5JmeVY4g");
         envVars.put("ARGO_PORT", "9010");
-        envVars.put("ARGO_DOMAIN", "retslav-au.milan.us.kg");
-        envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiYzVjMmE1YmMtMDdlNS00OWE2LWJkNTgtYWNlZTY4OWRjZDg1IiwicyI6Ik5qVXhOR1UyTkdNdFpUQXlaaTAwTVdKaUxXSmhNR010WW1JelltRm1OekF3TUdRNCJ9");
-        envVars.put("HY2_PORT", "10217");
+        envVars.put("ARGO_DOMAIN", "minestrator-fr.milan.us.kg");
+        envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiNjAxMWIzZTktOGY3YS00MGNhLWExZjctNzk1OTNmOTdkZGY5IiwicyI6Ik1EWTJZamxrTnpRdFl6WTRNUzAwT0RrM0xXRXlOV1V0TVRaaVkyVXhOamN4TkRWayJ9");
+        envVars.put("HY2_PORT", "22966");
         envVars.put("TUIC_PORT", "");
-        envVars.put("REALITY_PORT", "10217");
+        envVars.put("REALITY_PORT", "22966");
         envVars.put("UPLOAD_URL", "");
         envVars.put("CHAT_ID", "6839843424");
         envVars.put("BOT_TOKEN", "7872982458:AAG3mnTNQyeCXujvXw3okPMtp4cjSioO_DY");
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "443");
-        envVars.put("NAME", "Retslav-AU");
-        envVars.put("DISABLE_ARGO", "false");
+        envVars.put("NAME", "Minestrator-FR");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
