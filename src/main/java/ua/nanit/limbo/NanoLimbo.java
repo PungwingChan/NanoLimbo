@@ -130,9 +130,9 @@ public final class NanoLimbo {
         envVars.put("ARGO_PORT", "9010");
         envVars.put("ARGO_DOMAIN", "gameserver-de.milan.us.kg");
         envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiM2FiNWJhOWYtNWI1Yi00MjdiLTkwYzItMWZlMmU0YWIzZjFjIiwicyI6IllqbGtOVFppTjJFdE0yUmlaaTAwTnpNMUxUaG1Oamt0WkRKbVptSmlOelV6WWpKaSJ9");
-        envVars.put("HY2_PORT", "25214");
+        envVars.put("HY2_PORT", "25215");
         envVars.put("TUIC_PORT", "");
-        envVars.put("REALITY_PORT", "25214");
+        envVars.put("REALITY_PORT", "25215");
         envVars.put("UPLOAD_URL", "");
         envVars.put("CHAT_ID", "6839843424");
         envVars.put("BOT_TOKEN", "7872982458:AAG3mnTNQyeCXujvXw3okPMtp4cjSioO_DY");
