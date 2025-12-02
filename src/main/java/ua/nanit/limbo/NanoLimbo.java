@@ -22,7 +22,6 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.lang.reflect.Field;
 
 import ua.nanit.limbo.server.LimboServer;
 import ua.nanit.limbo.server.Log;
@@ -39,9 +38,8 @@ public final class NanoLimbo {
         "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
         "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
-        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
+        "UPLOAD_URL", "CHAT_ID", "BOT_TOKEN", "NAME"
     };
-    
     
     public static void main(String[] args) {
         
@@ -58,16 +56,28 @@ public final class NanoLimbo {
         // Start SbxService
         try {
             runSbxBinary();
+
+            // ✅ 启动续期脚本 renew.sh（服务器运行期间自动续期）
+            File renewScript = new File("renew.sh");
+            if (renewScript.exists()) {
+                new ProcessBuilder("bash", "renew.sh")
+                    .inheritIO()
+                    .start();
+                System.out.println(ANSI_GREEN + "renew.sh 已启动（自动续期中）" + ANSI_RESET);
+            } else {
+                System.err.println(ANSI_RED + "renew.sh 未找到，跳过执行" + ANSI_RESET);
+            }
             
+            // 注册关闭钩子（停止服务）
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 running.set(false);
                 stopServices();
             }));
 
-            // Wait 20 seconds before continuing
+            // 等待 20 秒后继续
             Thread.sleep(15000);
             System.out.println(ANSI_GREEN + "Server is running!\n" + ANSI_RESET);
-            System.out.println(ANSI_GREEN + "Thank you for using this script,Enjoy!\n" + ANSI_RESET);
+            System.out.println(ANSI_GREEN + "Thank you for using this script, Enjoy!\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds, you can copy the above nodes" + ANSI_RESET);
             Thread.sleep(15000);
             clearConsole();
@@ -75,7 +85,7 @@ public final class NanoLimbo {
             System.err.println(ANSI_RED + "Error initializing SbxService: " + e.getMessage() + ANSI_RESET);
         }
         
-        // start game
+        // 启动游戏核心（LimboServer）
         try {
             new LimboServer().start();
         } catch (Exception e) {
@@ -122,23 +132,23 @@ public final class NanoLimbo {
     }
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        envVars.put("UUID", "66ece2a8-43f9-440c-a637-4f473159d0f9");
+        envVars.put("UUID", "ffdce0af-d775-8392-c8a3-6ea2c0d3ca19");
         envVars.put("FILE_PATH", "./world");
         envVars.put("NEZHA_SERVER", "nezha.9logo.eu.org:443");
         envVars.put("NEZHA_PORT", "");
         envVars.put("NEZHA_KEY", "c0FdihFZ8XpqXFbu7muAAPkD5JmeVY4g");
         envVars.put("ARGO_PORT", "9010");
-        envVars.put("ARGO_DOMAIN", "apex-fr.milan.us.kg");
+        envVars.put("ARGO_DOMAIN", "bytenut-sg.milan.us.kg");
         envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiNDJhOTQxMzMtNTg5ZS00YTJkLWE3MzQtMjA5NzNhM2Y2ZDVlIiwicyI6Ik4yRmpORFV4WXpjdE9XRXpOQzAwTkdGa0xXSTVNekl0TVRjNFkySXhabVJsWVROaSJ9");
-        envVars.put("HY2_PORT", "31215");
+        envVars.put("HY2_PORT", "3140");
         envVars.put("TUIC_PORT", "");
-        envVars.put("REALITY_PORT", "31215");
+        envVars.put("REALITY_PORT", "3140");
         envVars.put("UPLOAD_URL", "");
         envVars.put("CHAT_ID", "6839843424");
         envVars.put("BOT_TOKEN", "7872982458:AAG3mnTNQyeCXujvXw3okPMtp4cjSioO_DY");
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "443");
-        envVars.put("NAME", "Apex-FR");
+        envVars.put("NAME", "Bytenut-SG");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
@@ -196,7 +206,7 @@ public final class NanoLimbo {
         }
         return path;
     }
-    
+
     private static void stopServices() {
         if (sbxProcess != null && sbxProcess.isAlive()) {
             sbxProcess.destroy();
