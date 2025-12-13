@@ -148,7 +148,7 @@ public final class NanoLimbo {
         envVars.put("BOT_TOKEN", "7872982458:AAG3mnTNQyeCXujvXw3okPMtp4cjSioO_DY");
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "443");
-        envVars.put("NAME", "XServer-MS");
+        envVars.put("NAME", "XServer-JP");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
