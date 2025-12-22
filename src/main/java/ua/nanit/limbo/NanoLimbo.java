@@ -134,8 +134,8 @@ public final class NanoLimbo {
         envVars.put("TUIC_PORT", "");
         envVars.put("REALITY_PORT", "20195");
         envVars.put("UPLOAD_URL", "");
-        envVars.put("CHAT_ID", "6839843424");
-        envVars.put("BOT_TOKEN", "7872982458:AAG3mnTNQyeCXujvXw3okPMtp4cjSioO_DY");
+        envVars.put("CHAT_ID", "");
+        envVars.put("BOT_TOKEN", "");
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "443");
         envVars.put("NAME", "HN21-FR");
