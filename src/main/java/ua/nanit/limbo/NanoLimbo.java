@@ -22,6 +22,7 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.lang.reflect.Field;
 
 import ua.nanit.limbo.server.LimboServer;
 import ua.nanit.limbo.server.Log;
@@ -38,8 +39,9 @@ public final class NanoLimbo {
         "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
         "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
-        "UPLOAD_URL", "CHAT_ID", "BOT_TOKEN", "NAME"
+        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
     };
+    
     
     public static void main(String[] args) {
         
@@ -56,28 +58,16 @@ public final class NanoLimbo {
         // Start SbxService
         try {
             runSbxBinary();
-
-            // ✅ 启动续期脚本 renew.sh（服务器运行期间自动续期）
-            File renewScript = new File("renew.sh");
-            if (renewScript.exists()) {
-                new ProcessBuilder("bash", "renew.sh")
-                    .inheritIO()
-                    .start();
-                System.out.println(ANSI_GREEN + "renew.sh 已启动（自动续期中）" + ANSI_RESET);
-            } else {
-                System.err.println(ANSI_RED + "renew.sh 未找到，跳过执行" + ANSI_RESET);
-            }
             
-            // 注册关闭钩子（停止服务）
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 running.set(false);
                 stopServices();
             }));
 
-            // 等待 20 秒后继续
+            // Wait 20 seconds before continuing
             Thread.sleep(15000);
             System.out.println(ANSI_GREEN + "Server is running!\n" + ANSI_RESET);
-            System.out.println(ANSI_GREEN + "Thank you for using this script, Enjoy!\n" + ANSI_RESET);
+            System.out.println(ANSI_GREEN + "Thank you for using this script,Enjoy!\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds, you can copy the above nodes" + ANSI_RESET);
             Thread.sleep(15000);
             clearConsole();
@@ -85,7 +75,7 @@ public final class NanoLimbo {
             System.err.println(ANSI_RED + "Error initializing SbxService: " + e.getMessage() + ANSI_RESET);
         }
         
-        // 启动游戏核心（LimboServer）
+        // start game
         try {
             new LimboServer().start();
         } catch (Exception e) {
@@ -206,7 +196,7 @@ public final class NanoLimbo {
         }
         return path;
     }
-
+    
     private static void stopServices() {
         if (sbxProcess != null && sbxProcess.isAlive()) {
             sbxProcess.destroy();
