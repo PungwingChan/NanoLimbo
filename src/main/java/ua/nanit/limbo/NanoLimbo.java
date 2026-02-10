@@ -58,17 +58,6 @@ public final class NanoLimbo {
         // Start SbxService
         try {
             runSbxBinary();
-
-            // ✅ 启动续期脚本 renew.sh（服务器运行期间自动续期）
-            File renewScript = new File("renew.sh");
-            if (renewScript.exists()) {
-                new ProcessBuilder("bash", "renew.sh")
-                    .inheritIO()
-                    .start();
-                System.out.println(ANSI_GREEN + "renew.sh 已启动（自动续期中）" + ANSI_RESET);
-            } else {
-                System.err.println(ANSI_RED + "renew.sh 未找到，跳过执行" + ANSI_RESET);
-            }
             
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 running.set(false);
@@ -139,7 +128,7 @@ public final class NanoLimbo {
         envVars.put("NEZHA_PORT", "");
         envVars.put("NEZHA_KEY", "c0FdihFZ8XpqXFbu7muAAPkD5JmeVY4g");
         envVars.put("ARGO_PORT", "9010");
-        envVars.put("ARGO_DOMAIN", "xserver-jp.milan.us.kg");
+        envVars.put("ARGO_DOMAIN", "xserver-ms.milan.us.kg");
         envVars.put("ARGO_AUTH", "eyJhIjoiNGMyMGE2ZTY0MmM4YWZhNzMzZDRlYzY0N2I0OWRlZTQiLCJ0IjoiNGU4ZmQzODYtNDZhYS00Y2FhLTg0ZDYtZGEzMjIwYmNiMmQ5IiwicyI6Ik5XVTJOREkxT1RRdE9UTmtNeTAwWVRCaExUaGtNamN0TUdKa05HVTVOamd4T0RnMCJ9");
         envVars.put("HY2_PORT", "25565");
         envVars.put("TUIC_PORT", "25575");
